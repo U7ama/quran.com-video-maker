@@ -1,0 +1,44 @@
+@use "src/styles/breakpoints";
+
+$button-hover-color: rgba(
+  $color: #000000,
+  $alpha: 0.3
+);
+
+.ctaButton {
+  padding-inline: 8px;
+  font-size: 15px;
+  font-weight: var(--font-weight-bold);
+}
+
+.listenToRadio {
+  color: var(--color-text-default-new);
+  @include breakpoints.tablet {
+    font-size: var(--font-size-normal-px);
+  }
+}
+
+.container {
+  inset-block-start: 0;
+  inset-inline: 0;
+
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+}
+
+.stationTitle {
+  margin-block-start: var(--spacing-medium);
+}
+
+.editStationButton {
+  margin-inline-end: var(--spacing-xsmall);
+  text-decoration: underline;
+}
+
+.station {
+  font-weight: var(--font-weight-bold);
+}

@@ -1,0 +1,71 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "baseUrl": ".",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": false,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "module": "esnext",
+    "moduleResolution": "node",
+    "noEmit": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitAny": false,
+    "noImplicitReturns": false,
+    "noImplicitThis": false,
+    "strictNullChecks": false,
+    "strictFunctionTypes": false,
+    "strictBindCallApply": false,
+    "strictPropertyInitialization": false,
+    "noImplicitOverride": false,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "target": "es5",
+    "incremental": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "paths": {
+      "@/icons/*": [
+        "./public/icons/*"
+      ],
+      "@/public/*": [
+        "./public/*"
+      ],
+      "@/dls/*": [
+        "./src/components/dls/*"
+      ],
+      "@/data/*": [
+        "./data/*"
+      ],
+      "@/types/*": [
+        "./types/*"
+      ],
+      "@/tests/*": [
+        "./tests/*"
+      ],
+      "@/*": [
+        "./src/*"
+      ]
+    }
+  },
+  "exclude": [
+    "node_modules"
+  ],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".svg"
+  ],
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  }
+}

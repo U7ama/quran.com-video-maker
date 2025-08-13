@@ -1,0 +1,53 @@
+@use "src/styles/breakpoints";
+
+$tablet-max-width: 50rem;
+
+.pageContainer {
+  margin-block-start: var(--spacing-medium);
+
+  // TODO: remove this when we remove banner
+  @include breakpoints.smallerThanTablet {
+    // TODO: we should add the banner height here if it's shown
+    // padding-block-start: calc(var(--spacing-micro) + var(--banner-height));
+    padding-block-start: calc(var(--spacing-micro));
+  }
+
+  margin-block-end: calc(2 * var(--spacing-mega));
+}
+
+.searchInputContainer {
+  padding-inline-start: var(--spacing-xsmall);
+  padding-inline-end: var(--spacing-xsmall);
+  margin-inline-start: auto;
+  margin-inline-end: auto;
+}
+
+.searchInput {
+  border: 0;
+  width: 90%;
+  font-size: var(--font-size-normal);
+  background: var(--color-background-default);
+  &:focus {
+    outline: none;
+  }
+  &:disabled {
+    background: none;
+  }
+}
+
+.pageBody {
+  padding-inline: calc(1 * var(--spacing-xsmall));
+  @include breakpoints.tablet {
+    max-width: $tablet-max-width;
+    margin-inline: auto;
+    padding-inline: calc(1.5 * var(--spacing-medium));
+  }
+}
+
+.searchBodyContainer {
+  padding-block-start: var(--spacing-small);
+}
+
+.searching {
+  font-weight: var(--font-weight-bold);
+}

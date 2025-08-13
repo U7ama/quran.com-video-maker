@@ -1,0 +1,44 @@
+{
+  "extends": [
+    "next",
+    "prettier"
+  ],
+  "plugins": ["prettier"],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-unused-vars": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/no-use-before-define": "off",
+    "@typescript-eslint/no-shadow": "off",
+    "no-use-before-define": "off",
+    "no-shadow": "off",
+    "react/jsx-filename-extension": "off",
+    "react/jsx-props-no-spreading": "off",
+    "react/function-component-definition": "off",
+    "react/jsx-no-useless-fragment": "off",
+    "react/no-unstable-nested-components": "off",
+    "react/destructuring-assignment": "off",
+    "react/no-children-prop": "off",
+    "react/no-deprecated": "off",
+    "react/no-multi-comp": "off",
+    "react/jsx-fragments": "off",
+    "react/jsx-handler-names": "off",
+    "react/sort-default-props": "off",
+    "react/jsx-key": "off",
+    "import/order": "off",
+    "max-lines": "off",
+    "prefer-destructuring": "off",
+    "import/extensions": "off",
+    "prettier/prettier": "off"
+  },
+  "settings": {
+    "import/resolver": {
+      "typescript": {},
+      "node": {
+        "paths": ["."],
+        "extensions": [".js", ".jsx", ".ts", ".tsx", ".d.ts", ".svg"]
+      }
+    }
+  }
+}

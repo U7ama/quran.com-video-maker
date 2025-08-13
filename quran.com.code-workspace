@@ -1,0 +1,21 @@
+{
+	"folders": [
+		{
+			"path": "quran.com-frontend-next"
+		},
+		{
+			"path": "proxy"
+		}
+	],
+	"settings": {
+		"typescript.format.enable": false,
+		"javascript.format.enable": false,
+		"prettier.disableLanguages": [
+			"javascript",
+			"javascriptreact",
+			"typescript",
+			"typescriptreact",
+			"scss"
+		]
+	}
+}
