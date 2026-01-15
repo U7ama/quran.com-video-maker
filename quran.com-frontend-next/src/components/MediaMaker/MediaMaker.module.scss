@@ -279,6 +279,11 @@ $colorPickerBorderRadius: calc(var(--spacing-medium) * 3);
   border: 3px solid rgb(4, 255, 0) !important;
 }
 
+.disabledSetting {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+}
+
 .BackgroundVideosWrapper {
   position: relative;
   display: grid;
@@ -287,6 +292,33 @@ $colorPickerBorderRadius: calc(var(--spacing-medium) * 3);
   @include breakpoints.smallerThanTablet {
     grid-template-columns: repeat(3, 1fr);
   }
+}
+
+.videoUploadContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.uploadedVideoInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  background-color: var(--color-background-default);
+  border-radius: 8px;
+  border: 1px solid var(--color-borders-hairline);
+}
+
+.uploadedVideoName {
+  flex: 1;
+  font-size: 14px;
+  color: var(--color-text-default);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .img {
@@ -369,6 +401,28 @@ $colorPickerBorderRadius: calc(var(--spacing-medium) * 3);
   margin-block: var(--spacing-large);
   @include breakpoints.smallerThanTablet {
     width: 90%;
+  }
+}
+
+.orientationSwitchContainer {
+  width: 100%;
+  min-width: 280px;
+  max-width: 400px;
+  margin-top: var(--spacing-small);
+  
+  // Override Switch grid to prevent buttons from merging
+  :global {
+    .container {
+      min-width: 100%;
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    .item {
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   }
 }
 

@@ -33,5 +33,21 @@
   "to": "to",
   "verse-key": "Chapter and Verse Number e.g. 2:255",
   "video-picker": "Background video",
-  "your-link": "Copy your link"
+  "your-link": "Copy your link",
+  "translation-audio": "Translation Audio",
+  "translation-audio-none": "None",
+  "translation-audio-urdu": "Urdu",
+  "translation-audio-urdu-only": "Urdu Only",
+  "video-upload-title": "Upload Your Video",
+  "video-upload-button": "Upload Video",
+  "video-upload-uploading": "Uploading...",
+  "video-upload-remove": "Remove",
+  "video-upload-custom": "Custom Video",
+  "video-upload-invalid-type": "Please select a valid video file",
+  "video-upload-too-large": "Video file is too large. Maximum size is 100MB",
+  "video-upload-error": "Error uploading video. Please try again.",
+  "display-options": "Display Options",
+  "show-arabic": "Show Arabic Text",
+  "show-logo": "Show Quran.com Logo",
+  "show-surah-info": "Show Surah and Juz Info"
 }

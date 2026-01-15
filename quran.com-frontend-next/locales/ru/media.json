@@ -30,5 +30,8 @@
   "to": "к",
   "verse-key": "Номер главы и стиха, например, 2:255",
   "video-picker": "Видео фон",
-  "your-link": "Скопируйте ссылку"
+  "your-link": "Скопируйте ссылку",
+  "translation-audio": "Аудио перевода",
+  "translation-audio-none": "Нет",
+  "translation-audio-urdu": "Урду"
 }

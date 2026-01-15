@@ -30,5 +30,8 @@
   "to": "ل",
   "verse-key": "رقم السورة والآية مثلا 2:255",
   "video-picker": "فيديو الخلفية",
-  "your-link": "انسخ الرابط الخاص بك"
+  "your-link": "انسخ الرابط الخاص بك",
+  "translation-audio": "صوت الترجمة",
+  "translation-audio-none": "لا شيء",
+  "translation-audio-urdu": "أردو"
 }

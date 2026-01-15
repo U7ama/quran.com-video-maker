@@ -15,6 +15,7 @@ enum QueryParam {
   QURAN_TEXT_FONT_SCALE = 'quranTextFontScale',
   QURAN_TEXT_FONT_STYLE = 'quranTextFontStyle',
   TRANSLATION_FONT_SCALE = 'translationFontScale',
+  TRANSLATION_AUDIO = 'translation_audio',
   FONT_COLOR = 'fontColor',
   BACKGROUND_COLOR = 'backgroundColor',
   BORDER_COLOR = 'borderColor',

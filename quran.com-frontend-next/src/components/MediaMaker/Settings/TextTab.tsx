@@ -7,6 +7,7 @@ import styles from '../MediaMaker.module.scss';
 import Counter from '@/dls/Counter/Counter';
 import Select from '@/dls/Forms/Select';
 import Separator from '@/dls/Separator/Separator';
+import Toggle from '@/dls/Toggle/Toggle';
 import {
   MAXIMUM_QURAN_FONT_STEP,
   MAXIMUM_TRANSLATIONS_FONT_STEP,
@@ -22,7 +23,14 @@ type TextTabProps = {
 
 const TextTab: FC<TextTabProps> = ({ mediaSettings, onSettingsUpdate }) => {
   const { t } = useTranslation('media');
-  const { quranTextFontScale, translationFontScale, quranTextFontStyle } = mediaSettings;
+  const {
+    quranTextFontScale,
+    translationFontScale,
+    quranTextFontStyle,
+    showArabic,
+    showLogo,
+    showSurahInfo,
+  } = mediaSettings;
 
   const types = useMemo(
     () =>
@@ -114,6 +122,38 @@ const TextTab: FC<TextTabProps> = ({ mediaSettings, onSettingsUpdate }) => {
                 ? null
                 : onTranslationFontScaleDecreaseClicked
             }
+          />
+        </div>
+      </div>
+      <div className={styles.separatorContainer}>
+        <Separator isVertical />
+      </div>
+      <div className={styles.section}>
+        <div className={styles.sectionTitle}>{t('display-options')}</div>
+        <div className={styles.selectContainer}>
+          <Toggle
+            id="show-arabic"
+            label={t('show-arabic')}
+            checked={showArabic}
+            onChange={(checked) => {
+              onSettingsUpdate({ showArabic: checked }, 'showArabic', checked);
+            }}
+          />
+          <Toggle
+            id="show-logo"
+            label={t('show-logo')}
+            checked={showLogo}
+            onChange={(checked) => {
+              onSettingsUpdate({ showLogo: checked }, 'showLogo', checked);
+            }}
+          />
+          <Toggle
+            id="show-surah-info"
+            label={t('show-surah-info')}
+            checked={showSurahInfo}
+            onChange={(checked) => {
+              onSettingsUpdate({ showSurahInfo: checked }, 'showSurahInfo', checked);
+            }}
           />
         </div>
       </div>

@@ -30,5 +30,8 @@
   "to": "ile",
   "verse-key": "Bölüm ve Ayet Numarası örneğin 2:255",
   "video-picker": "Arkaplan videosu",
-  "your-link": "Bağlantınızı kopyalayın"
+  "your-link": "Bağlantınızı kopyalayın",
+  "translation-audio": "Çeviri sesi",
+  "translation-audio-none": "Yok",
+  "translation-audio-urdu": "Urduca"
 }

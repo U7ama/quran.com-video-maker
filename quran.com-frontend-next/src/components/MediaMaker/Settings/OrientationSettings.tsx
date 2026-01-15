@@ -22,14 +22,16 @@ const OrientationSettings: React.FC<Props> = ({ onSettingsUpdate, orientation })
   return (
     <div className={styles.section}>
       <div className={styles.sectionTitle}>{t('orientation')}</div>
-      <Switch
-        items={[
-          { name: t(Orientation.LANDSCAPE), value: Orientation.LANDSCAPE },
-          { name: t(Orientation.PORTRAIT), value: Orientation.PORTRAIT },
-        ]}
-        selected={orientation}
-        onSelect={onOrientationChange}
-      />
+      <div className={styles.orientationSwitchContainer}>
+        <Switch
+          items={[
+            { name: t(Orientation.LANDSCAPE), value: Orientation.LANDSCAPE },
+            { name: t(Orientation.PORTRAIT), value: Orientation.PORTRAIT },
+          ]}
+          selected={orientation}
+          onSelect={onOrientationChange}
+        />
+      </div>
     </div>
   );
 };

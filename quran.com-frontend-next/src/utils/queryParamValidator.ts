@@ -29,7 +29,9 @@ export const isValidTranslationsQueryParamValue = (value: string): boolean => {
   }
   return isValid;
 };
-
+export const isValidTranslationAudioQueryParamValue = (value: string): boolean => {
+  return value === 'none' || value === 'urdu';
+};
 export const isValidTranslationsQueryParamValueWithExistingKey = (
   value: string,
   translationsData?: AvailableTranslation[],

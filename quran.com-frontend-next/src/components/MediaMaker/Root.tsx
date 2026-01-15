@@ -69,7 +69,10 @@ export const RemotionRoot = () => {
         return {
           ...props,
           ...orientationToDimensions(props.orientation),
-          durationInFrames: getDurationInFrames(props.timestamps),
+          durationInFrames: getDurationInFrames(
+            props.timestamps,
+            props.translationAudio || 'none',
+          ),
         };
       }}
       defaultProps={DEFAULT_PROPS}

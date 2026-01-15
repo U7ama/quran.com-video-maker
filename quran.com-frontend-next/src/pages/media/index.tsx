@@ -48,6 +48,7 @@ import {
   DEFAULT_API_PARAMS,
   DEFAULT_QURAN_FONT_STYLE,
   DEFAULT_RECITER_ID,
+  DEFAULT_VIDEO_ID,
   DEFAULT_SURAH,
   DEFAULT_VERSE,
   VIDEO_FPS,
@@ -94,6 +95,8 @@ const MediaMaker: NextPage<MediaMaker> = ({
   const TOAST_GENERAL_ERROR = t('common:error.general');
   const areMediaFilesReady = videoFileReady && audioFileReady;
   const [isRendering, setIsRendering] = useState(false);
+  const [translationDurations, setTranslationDurations] = useState<Record<string, number>>({});
+  const [isLoadingUrduDurations, setIsLoadingUrduDurations] = useState(false);
   const playerRef = useRef<PlayerRef>(null);
 
   const router = useRouter();
@@ -253,11 +256,176 @@ const MediaMaker: NextPage<MediaMaker> = ({
     return getNormalizedTimestamps(audioData, VIDEO_FPS);
   }, [audioData]);
 
+  // Update the useEffect to fetch Urdu audio durations WITH loading state
+  useEffect(() => {
+    if (
+      (mediaSettings.translationAudio === 'urdu' ||
+        mediaSettings.translationAudio === 'urdu-only') &&
+      verseData?.verses &&
+      verseData.verses.length > 0
+    ) {
+      setIsLoadingUrduDurations(true);
+
+      const fetchDurations = async () => {
+        const newDurations: Record<string, number> = {};
+
+        // Fetch all durations in parallel for better performance
+        const promises = verseData.verses.map(async (verse) => {
+          const paddedChapter = String(verse.chapterId).padStart(3, '0');
+          const paddedVerse = String(verse.verseNumber).padStart(3, '0');
+          const audioUrl = `https://everyayah.com/data/translations/urdu_shamshad_ali_khan_46kbps/${paddedChapter}${paddedVerse}.mp3`;
+
+          try {
+            const audio = new Audio();
+            const duration = await new Promise<number>((resolve, reject) => {
+              const timeout = setTimeout(() => {
+                reject(new Error('Timeout'));
+              }, 10000); // 10 second timeout
+
+              audio.addEventListener('loadedmetadata', () => {
+                clearTimeout(timeout);
+                resolve(audio.duration);
+              });
+              audio.addEventListener('error', () => {
+                clearTimeout(timeout);
+                reject(new Error('Failed to load'));
+              });
+              audio.crossOrigin = 'anonymous';
+              audio.src = audioUrl;
+              audio.load();
+            });
+
+            const durationInFrames = Math.ceil(duration * 30);
+            const key = `${verse.chapterId}:${verse.verseNumber}`;
+            newDurations[key] = durationInFrames;
+            console.log(
+              `Fetched Urdu duration for ${key}: ${durationInFrames} frames (${duration.toFixed(
+                2,
+              )}s)`,
+            );
+          } catch (error) {
+            console.error(`Error getting duration for verse ${verse.verseNumber}:`, error);
+            const key = `${verse.chapterId}:${verse.verseNumber}`;
+            newDurations[key] = 300; // 10 seconds default
+            console.warn(`Using default duration for ${key}: 300 frames`);
+          }
+        });
+
+        await Promise.all(promises);
+
+        console.log('All Urdu durations fetched:', newDurations);
+        setTranslationDurations(newDurations);
+        setIsLoadingUrduDurations(false);
+      };
+
+      fetchDurations();
+    } else {
+      // Clear durations if Urdu is not selected
+      setTranslationDurations({});
+      setIsLoadingUrduDurations(false);
+    }
+  }, [mediaSettings.translationAudio, verseData?.verses]);
+
+  // IMPORTANT: Only calculate adjusted timestamps AFTER durations are loaded
+  const adjustedTimestamps = useMemo(() => {
+    if (!timestamps || timestamps.length === 0) {
+      return timestamps;
+    }
+
+    if (
+      mediaSettings.translationAudio !== 'urdu' &&
+      mediaSettings.translationAudio !== 'urdu-only'
+    ) {
+      return timestamps;
+    }
+
+    // If we're still loading durations, return original timestamps
+    // This prevents calculating with empty durations
+    if (isLoadingUrduDurations) {
+      console.log('Still loading Urdu durations, using original timestamps');
+      return timestamps;
+    }
+
+    const isUrduOnly = mediaSettings.translationAudio === 'urdu-only';
+
+    // Adjust timestamps to include Urdu durations
+    let currentPosition = 0;
+    const adjusted = [];
+    const bufferFrames = 15; // 0.5 seconds buffer at 30fps
+
+    for (let i = 0; i < timestamps.length; i++) {
+      const originalTimestamp = timestamps[i];
+      const arabicDuration = originalTimestamp.durationInFrames;
+
+      // Get the actual Urdu duration for this verse
+      const verse = verseData.verses[i];
+      const verseKey = `${verse?.chapterId}:${verse?.verseNumber}`;
+      const urduDuration = translationDurations[verseKey];
+
+      if (!urduDuration) {
+        console.warn(`Missing Urdu duration for ${verseKey}, durations:`, translationDurations);
+      }
+
+      const actualUrduDuration = urduDuration || 300;
+
+      if (isUrduOnly) {
+        // Urdu-only mode: only Urdu audio, no Arabic, no buffer
+        console.log(`Adjusting timestamp for ${verseKey} [Urdu-only]: Urdu=${actualUrduDuration}`);
+
+        adjusted.push({
+          ...originalTimestamp,
+          start: currentPosition,
+          urduStart: currentPosition, // Urdu starts immediately (no Arabic before it)
+          urduDuration: actualUrduDuration,
+        });
+
+        // Move position forward: Only Urdu (no Arabic, no buffer)
+        currentPosition += actualUrduDuration;
+      } else {
+        // Urdu mode: Arabic + buffer + Urdu
+        console.log(
+          `Adjusting timestamp for ${verseKey}: Arabic=${arabicDuration}, Urdu=${actualUrduDuration}`,
+        );
+
+        adjusted.push({
+          ...originalTimestamp,
+          start: currentPosition,
+          end: currentPosition + arabicDuration,
+          urduStart: currentPosition + arabicDuration + bufferFrames,
+          urduDuration: actualUrduDuration,
+        });
+
+        // Move position forward: Arabic + buffer + Urdu
+        currentPosition += arabicDuration + bufferFrames + actualUrduDuration;
+      }
+    }
+
+    console.log('Adjusted timestamps for render:', adjusted);
+    return adjusted;
+  }, [
+    timestamps,
+    mediaSettings.translationAudio,
+    verseData.verses,
+    translationDurations,
+    isLoadingUrduDurations,
+  ]);
+
+  const durationInFrames = useMemo(() => {
+    return getDurationInFrames(adjustedTimestamps, mediaSettings.translationAudio);
+  }, [adjustedTimestamps, mediaSettings.translationAudio]);
+
+  useEffect(() => {
+    if (Object.keys(translationDurations).length > 0) {
+      console.log('Translation durations updated:', translationDurations);
+      console.log('Adjusted timestamps after duration update:', adjustedTimestamps);
+    }
+  }, [translationDurations, adjustedTimestamps]);
+
   const inputProps = useMemo(() => {
     return {
       verses: verseData.verses,
       audio: audioData,
-      timestamps,
+      timestamps: adjustedTimestamps,
       backgroundColor,
       opacity,
       borderColor,
@@ -265,22 +433,45 @@ const MediaMaker: NextPage<MediaMaker> = ({
       fontColor,
       verseAlignment,
       translationAlignment,
-      video: getBackgroundVideoById(videoId),
+      video: (() => {
+        if (mediaSettings.customVideoUrl) {
+          console.log('Using custom video:', mediaSettings.customVideoUrl);
+          // For custom videos, use a default watermark color
+          const defaultVideo = getBackgroundVideoById(DEFAULT_VIDEO_ID);
+          return {
+            videoSrc: mediaSettings.customVideoUrl,
+            thumbnailSrc: '',
+            watermarkColor: defaultVideo?.watermarkColor || 'light',
+          };
+        }
+        const defaultVideo = getBackgroundVideoById(videoId);
+        // Fallback to default video if videoId is invalid
+        const video = defaultVideo || getBackgroundVideoById(DEFAULT_VIDEO_ID);
+        console.log('Using predefined video:', video?.videoSrc);
+        return video;
+      })(),
       quranTextFontScale,
       quranTextFontStyle,
       translationFontScale,
       orientation,
       videoId,
+      customVideoUrl: mediaSettings.customVideoUrl,
       chapterEnglishName,
       isPlayer: true,
       translations,
+      translationAudio: mediaSettings.translationAudio || 'none',
+      translationDurations, // This will now have the actual values
       previewMode,
+      durationInFrames,
+      showArabic: mediaSettings.showArabic ?? true,
+      showLogo: mediaSettings.showLogo ?? true,
+      showSurahInfo: mediaSettings.showSurahInfo ?? true,
     };
   }, [
     verseData.verses,
     translations,
     audioData,
-    timestamps,
+    adjustedTimestamps,
     backgroundColor,
     opacity,
     borderColor,
@@ -294,9 +485,15 @@ const MediaMaker: NextPage<MediaMaker> = ({
     translationFontScale,
     orientation,
     chapterEnglishName,
+    mediaSettings.translationAudio,
+    translationDurations,
     previewMode,
+    durationInFrames,
+    mediaSettings.customVideoUrl,
+    mediaSettings.showArabic,
+    mediaSettings.showLogo,
+    mediaSettings.showSurahInfo,
   ]);
-
   /**
    * Disables preview mode by setting the preview_mode URL parameter to disabled
    */
@@ -318,12 +515,28 @@ const MediaMaker: NextPage<MediaMaker> = ({
 
   const method = isChromeIOS() ? 'base64' : 'blob-url';
   useEffect(() => {
+    if (!inputProps.video?.videoSrc) {
+      return;
+    }
+
+    // Handle custom videos (blob URLs) vs predefined videos
+    const isCustomVideo = inputProps.video.videoSrc.startsWith('blob:');
+
+    // Blob URLs don't need prefetching - they're already in memory
+    // But we should wait a bit to ensure the blob URL is ready
+    if (isCustomVideo) {
+      // Small delay to ensure blob URL is ready
+      setTimeout(() => {
+        setVideoFileReady(true);
+      }, 100);
+      return;
+    }
+
     setVideoFileReady(false);
+    const videoPath = staticFile(`/publicMin${inputProps.video.videoSrc}`);
+
     // {@see https://www.remotion.dev/docs/troubleshooting/player-flicker#option-6-prefetching-as-base64-to-avoid-network-request-and-local-http-server}
-    const { waitUntilDone: waitUntilVideoDone } = prefetch(
-      staticFile(`/publicMin${inputProps.video.videoSrc}`),
-      { method },
-    );
+    const { waitUntilDone: waitUntilVideoDone } = prefetch(videoPath, { method });
 
     waitUntilVideoDone()
       .then(() => {
@@ -335,7 +548,7 @@ const MediaMaker: NextPage<MediaMaker> = ({
         });
         cancelRender(e);
       });
-  }, [inputProps.video.videoSrc, toast, TOAST_GENERAL_ERROR, method]);
+  }, [inputProps.video?.videoSrc, toast, TOAST_GENERAL_ERROR, method]);
 
   useEffect(() => {
     if (inputProps.audio.audioUrl !== defaultAudio.audioUrl || !shouldRefetchAudioData) {
@@ -367,7 +580,8 @@ const MediaMaker: NextPage<MediaMaker> = ({
   ]);
 
   const renderPoster: RenderPoster = useCallback(() => {
-    const video = getBackgroundVideoById(videoId);
+    // Use video from inputProps to handle both custom and predefined videos
+    const video = inputProps.video;
 
     if (isFetching || !areMediaFilesReady) {
       return (
@@ -375,6 +589,11 @@ const MediaMaker: NextPage<MediaMaker> = ({
           <Spinner className={styles.spinner} size={SpinnerSize.Large} />
         </div>
       );
+    }
+
+    // If no video or no thumbnail, return empty poster
+    if (!video || !video.thumbnailSrc) {
+      return null;
     }
 
     return (
@@ -389,7 +608,7 @@ const MediaMaker: NextPage<MediaMaker> = ({
         />
       </AbsoluteFill>
     );
-  }, [areMediaFilesReady, isFetching, videoId]);
+  }, [areMediaFilesReady, isFetching, videoId, inputProps.video]);
 
   const chaptersList = useMemo(() => {
     return Object.entries(chaptersData).map(([id, chapterObj], index) => ({
@@ -455,7 +674,9 @@ const MediaMaker: NextPage<MediaMaker> = ({
         >
           <>
             <Player
-              key={`player-${previewMode}`}
+              key={`player-${previewMode}-${mediaSettings.translationAudio}-${
+                mediaSettings.customVideoUrl || videoId
+              }`}
               ref={playerRef}
               className={classNames(styles.player, {
                 [styles.playerHeightSafari]: isSafari(),
@@ -463,20 +684,21 @@ const MediaMaker: NextPage<MediaMaker> = ({
               })}
               inputProps={inputProps}
               component={PlayerContent}
-              durationInFrames={getDurationInFrames(timestamps)}
+              durationInFrames={durationInFrames}
               compositionWidth={width}
               compositionHeight={height}
               allowFullscreen
               doubleClickToFullscreen
               fps={VIDEO_FPS}
               controls={!isFetching && areMediaFilesReady}
-              bufferStateDelayInMilliseconds={200} // wait for 200ms second before showing the spinner
+              bufferStateDelayInMilliseconds={200}
               renderPoster={renderPoster}
               posterFillMode="player-size"
               showPosterWhenUnplayed
               showPosterWhenPaused
               showPosterWhenBuffering
               showPosterWhenEnded
+              numberOfSharedAudioTags={10}
             />
           </>
         </div>
@@ -499,7 +721,11 @@ const MediaMaker: NextPage<MediaMaker> = ({
         ) : (
           <div className={layoutStyles.flow}>
             <div className={layoutStyles.additionalVerticalGapNew}>
-              <LocalRenderButton inputProps={inputProps} className={styles.renderButton} />
+              <LocalRenderButton
+                inputProps={inputProps}
+                className={styles.renderButton}
+                isLoadingUrduDurations={isLoadingUrduDurations}
+              />
             </div>
             <VideoSettings
               chaptersList={chaptersList}

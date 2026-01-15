@@ -30,5 +30,8 @@
   "to": "到",
   "verse-key": "章节号，例如 2:255",
   "video-picker": "背景视频",
-  "your-link": "复制您的链接"
+  "your-link": "复制您的链接",
+  "translation-audio": "翻译音频",
+  "translation-audio-none": "无",
+  "translation-audio-urdu": "乌尔都语"
 }

@@ -62,6 +62,7 @@ const MEDIA_SETTINGS_TO_QUERY_PARAM = {
   fontColor: QueryParam.FONT_COLOR,
   orientation: QueryParam.ORIENTATION,
   videoId: QueryParam.VIDEO_ID,
+  translationAudio: QueryParam.TRANSLATION_AUDIO,
   surah: QueryParam.SURAH,
   previewMode: QueryParam.PREVIEW_MODE,
 } as Record<keyof MediaSettings, QueryParam>;

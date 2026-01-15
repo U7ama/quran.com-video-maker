@@ -45,6 +45,8 @@ interface Video {
 export interface Timestamp {
   start: number;
   durationInFrames: number;
+  urduStart?: number;
+  urduDuration?: number;
 }
 
 interface Audio {

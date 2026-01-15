@@ -21,8 +21,13 @@ type MediaSettings = {
   translationAlignment: Alignment;
   orientation: Orientation;
   videoId: number;
+  customVideoUrl?: string;
   surah: number;
+  translationAudio: string;
   previewMode: PreviewMode;
+  showArabic: boolean;
+  showLogo: boolean;
+  showSurahInfo: boolean;
 };
 
 export type ChangedSettings = {

@@ -12,14 +12,21 @@ const videos = getVideosArray();
 
 interface Props extends MediaSettingsProps {
   videoId: number;
+  customVideoUrl?: string;
 }
 
-const BackgroundVideos: React.FC<Props> = ({ onSettingsUpdate, videoId }) => {
+const BackgroundVideos: React.FC<Props> = ({ onSettingsUpdate, videoId, customVideoUrl }) => {
   const [selectedVideoId, setSelectedVideoId] = useState(videoId);
 
   const onVideoSelected = (newVideId: number) => {
     setSelectedVideoId(newVideId);
-    onSettingsUpdate({ videoId: newVideId }, 'videoId', newVideId);
+    // Clear custom video when selecting a predefined video
+    if (customVideoUrl) {
+      URL.revokeObjectURL(customVideoUrl);
+      onSettingsUpdate({ videoId: newVideId, customVideoUrl: undefined }, 'videoId', newVideId);
+    } else {
+      onSettingsUpdate({ videoId: newVideId }, 'videoId', newVideId);
+    }
   };
 
   return (
@@ -29,10 +36,13 @@ const BackgroundVideos: React.FC<Props> = ({ onSettingsUpdate, videoId }) => {
           alt={video.id}
           key={video.id}
           className={classNames(styles.img, {
-            [styles.selectedSetting]: video.id === selectedVideoId,
+            [styles.selectedSetting]: video.id === selectedVideoId && !customVideoUrl,
+            [styles.disabledSetting]: !!customVideoUrl,
           })}
           onClick={() => {
-            onVideoSelected(video.id);
+            if (!customVideoUrl) {
+              onVideoSelected(video.id);
+            }
           }}
           src={video.thumbnailSrc}
           width="100"

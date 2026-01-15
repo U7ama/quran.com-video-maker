@@ -30,5 +30,8 @@
   "to": "به",
   "verse-key": "شماره سوره و آیه مثلاً 2:255",
   "video-picker": "ویدئوی پس زمینه",
-  "your-link": "لینک خود را کپی کنید"
+  "your-link": "لینک خود را کپی کنید",
+  "translation-audio": "صوت ترجمه",
+  "translation-audio-none": "هیچ",
+  "translation-audio-urdu": "اردو"
 }

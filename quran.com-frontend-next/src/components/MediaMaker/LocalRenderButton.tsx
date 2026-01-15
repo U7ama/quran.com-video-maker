@@ -13,17 +13,22 @@ import { getReciterData } from '@/api';
 
 interface LocalRenderButtonProps {
   inputProps: any;
+  isLoadingUrduDurations: boolean;
   className?: string;
 }
 
 const WORD_SURAH = 'سُورَة';
 
-const LocalRenderButton: FC<LocalRenderButtonProps> = ({ inputProps, className }) => {
+const LocalRenderButton: FC<LocalRenderButtonProps> = ({
+  inputProps,
+  className,
+  isLoadingUrduDurations = false,
+}) => {
   const { t } = useTranslation('media');
   const [isRendering, setIsRendering] = useState(false);
   const [progress, setProgress] = useState(0);
   const toast = useToast();
-
+  console.log('isLoadingUrduDurations', isLoadingUrduDurations);
   // Get chapters data in Arabic
   const chaptersDataArabic = useGetChaptersData('ar');
 
@@ -95,6 +100,24 @@ const LocalRenderButton: FC<LocalRenderButtonProps> = ({ inputProps, className }
   };
 
   const handleLocalRender = async () => {
+    if (inputProps.translationAudio === 'urdu' || inputProps.translationAudio === 'urdu-only') {
+      // Verify that we have durations for all verses
+      const missingDurations = inputProps.verses.filter((verse) => {
+        const key = `${verse.chapterId}:${verse.verseNumber}`;
+        return !inputProps.translationDurations || !inputProps.translationDurations[key];
+      });
+
+      if (missingDurations.length > 0) {
+        console.error('Missing Urdu durations for verses:', missingDurations);
+        toast('Urdu audio durations are still loading. Please wait a moment and try again.', {
+          status: ToastStatus.Warning,
+        });
+        return;
+      }
+
+      console.log('All Urdu durations available:', inputProps.translationDurations);
+    }
+
     setIsRendering(true);
     setProgress(0);
 
@@ -115,14 +138,41 @@ const LocalRenderButton: FC<LocalRenderButtonProps> = ({ inputProps, className }
         ? inputProps.translations.map((t) => t.toString())
         : ['84']; // Default translation if none provided
 
+      // Convert blob URL to base64 if it's a custom video
+      let videoData = null;
+      if (inputProps.video?.videoSrc?.startsWith('blob:')) {
+        try {
+          const response = await fetch(inputProps.video.videoSrc);
+          const blob = await response.blob();
+          const reader = new FileReader();
+          videoData = await new Promise<string>((resolve, reject) => {
+            reader.onloadend = () => {
+              const base64String = reader.result as string;
+              resolve(base64String);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+          console.log('Converted blob URL to base64, size:', videoData.length);
+        } catch (error) {
+          console.error('Failed to convert blob URL to base64:', error);
+          toast('Failed to process uploaded video. Please try again.', {
+            status: ToastStatus.Error,
+          });
+          setIsRendering(false);
+          return;
+        }
+      }
+
       // Prepare the request data with all required fields and proper values
-      const requestData = {
+      const requestData: any = {
         ...inputProps,
         translations, // Use the string array
         requestId,
         durationInFrames, // Explicit duration
         fps: 30, // Explicit fps
         isPlayer: false, // Rendering mode, not player mode
+        translationAudio: inputProps.translationAudio || 'none',
         audio: inputProps.audio
           ? {
               ...inputProps.audio,
@@ -132,6 +182,11 @@ const LocalRenderButton: FC<LocalRenderButtonProps> = ({ inputProps, className }
           : undefined,
       };
 
+      // Only include customVideoData if we have video data (not null/undefined)
+      if (videoData) {
+        requestData.customVideoData = videoData;
+      }
+      console.log('Sending timestamps to render:', inputProps.timestamps);
       // Start the render process
       const promise = fetch('/api/render/local', {
         method: 'POST',
@@ -184,9 +239,13 @@ const LocalRenderButton: FC<LocalRenderButtonProps> = ({ inputProps, className }
         type={ButtonType.Primary}
         prefix={isRendering ? <Spinner size={SpinnerSize.Small} /> : <VideoIcon />}
         onClick={handleLocalRender}
-        isDisabled={isRendering}
+        isDisabled={isRendering || isLoadingUrduDurations}
       >
-        {isRendering ? `Rendering Video... ${progress}%` : 'Render Video Locally'}
+        {isRendering
+          ? `Rendering Video... ${progress}%`
+          : isLoadingUrduDurations
+          ? 'Loading audio...'
+          : 'Render Video Locally'}
       </Button>
     </div>
   );

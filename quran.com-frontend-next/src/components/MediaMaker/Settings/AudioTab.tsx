@@ -8,6 +8,7 @@ import styles from '../MediaMaker.module.scss';
 import ReciterSettings from './ReciterSettings';
 import TranslationSettingsSection from './TranslationSectionSetting';
 import VersesRangeSelector from './VersesRangeSelector';
+import TranslationAudioSettings from './TranslationAudioSettings';
 
 import { RangeSelectorType } from '@/components/Verse/AdvancedCopy/SelectorContainer';
 import validateRangeSelection from '@/components/Verse/AdvancedCopy/utils/validateRangeSelection';
@@ -17,7 +18,6 @@ import Separator from '@/dls/Separator/Separator';
 import MediaSettings, { ChangedSettings } from '@/types/Media/MediaSettings';
 import Reciter from '@/types/Reciter';
 import { toLocalizedVerseKey } from '@/utils/locale';
-import { MAX_AYAHS_LIMIT } from '@/utils/validator';
 import { generateChapterVersesKeys, getVerseNumberFromKey } from '@/utils/verse';
 
 type AudioTabProps = {
@@ -73,20 +73,16 @@ const AudioTab: FC<AudioTabProps> = ({
     const isVerseKeyStartOfRange = verseSelectorId === RangeSelectorType.START;
 
     if (isVerseKeyStartOfRange) {
-      const isMaxAyahs = Number(verseTo) - Number(newSelectedVerseNumber) >= MAX_AYAHS_LIMIT;
-
       onSettingsUpdate(
         {
           verseFrom: newSelectedVerseNumber,
-          verseTo: isMaxAyahs ? newSelectedVerseNumber : verseTo,
+          verseTo,
           surah,
         },
         'verseFrom',
         newSelectedVerseNumber,
       );
     } else {
-      const isMaxAyahs = Number(newSelectedVerseNumber) - Number(verseFrom) >= MAX_AYAHS_LIMIT;
-
       const startVerseNumber = isVerseKeyStartOfRange ? newSelectedVerseNumber : verseFrom;
       const endVerseNumber = !isVerseKeyStartOfRange ? newSelectedVerseNumber : verseTo;
       const startVerseKey = `${surah}:${startVerseNumber}`;
@@ -100,7 +96,7 @@ const AudioTab: FC<AudioTabProps> = ({
 
       onSettingsUpdate(
         {
-          verseFrom: isMaxAyahs ? newSelectedVerseNumber : verseFrom,
+          verseFrom,
           verseTo: newSelectedVerseNumber,
           surah,
         },
@@ -114,10 +110,7 @@ const AudioTab: FC<AudioTabProps> = ({
   return (
     <div className={styles.tabContainer}>
       <div className={styles.section}>
-        <div className={styles.sectionTitle}>
-          {t('common:ayahs')}
-          <div className={styles.label}>{t('max-ayahs')}</div>
-        </div>
+        <div className={styles.sectionTitle}>{t('common:ayahs')}</div>
 
         <div className={styles.selectContainer}>
           <Select
@@ -150,6 +143,13 @@ const AudioTab: FC<AudioTabProps> = ({
         reciter={mediaSettings.reciter}
         onSettingsUpdate={onSettingsUpdate}
         reciters={reciters}
+      />
+      <div className={styles.separatorContainer}>
+        <Separator isVertical />
+      </div>
+      <TranslationAudioSettings
+        translationAudio={mediaSettings.translationAudio}
+        onSettingsUpdate={onSettingsUpdate}
       />
       <div className={styles.separatorContainer}>
         <Separator isVertical />

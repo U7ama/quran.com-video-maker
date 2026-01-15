@@ -19,6 +19,9 @@ import {
   DEFAULT_TRANSLATION,
   DEFAULT_TRANSLATION_FONT_SCALE,
   DEFAULT_VIDEO_ID,
+  DEFAULT_SHOW_ARABIC,
+  DEFAULT_SHOW_LOGO,
+  DEFAULT_SHOW_SURAH_INFO,
 } from '@/utils/media/constants';
 
 const initialState: MediaSettings = {
@@ -33,6 +36,7 @@ const initialState: MediaSettings = {
   translations: [DEFAULT_TRANSLATION],
   fontColor: DEFAULT_FONT_COLOR,
   verseAlignment: Alignment.CENTRE,
+  translationAudio: 'urdu',
   translationAlignment: Alignment.CENTRE,
   orientation: Orientation.PORTRAIT,
   videoId: DEFAULT_VIDEO_ID,
@@ -40,8 +44,11 @@ const initialState: MediaSettings = {
   verseFrom: '1',
   verseTo: '1',
   previewMode: DEFAULT_PREVIEW_MODE,
+  showArabic: DEFAULT_SHOW_ARABIC,
+  showLogo: DEFAULT_SHOW_LOGO,
+  showSurahInfo: DEFAULT_SHOW_SURAH_INFO,
 };
-
+export const selectTranslationAudio = (state: RootState) => state.mediaMaker.translationAudio;
 export const mediaGeneratorSlice = createSlice({
   name: SliceName.MEDIA_MAKER,
   initialState,

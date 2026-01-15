@@ -1,7 +1,10 @@
 import { useContext, useMemo } from 'react';
 
+import { useSelector } from 'react-redux';
+
 import DataContext from '@/contexts/DataContext';
 import useGetQueryParamOrReduxValue from '@/hooks/useGetQueryParamOrReduxValue';
+import { selectMediaMakerSettings } from '@/redux/slices/mediaMaker';
 import AvailableTranslation from '@/types/AvailableTranslation';
 import Alignment from '@/types/Media/Alignment';
 import MediaSettings from '@/types/Media/MediaSettings';
@@ -70,6 +73,19 @@ const useGetMediaSettings = (
   const { value: previewMode }: { value: PreviewMode } = useGetQueryParamOrReduxValue(
     QueryParam.PREVIEW_MODE,
   );
+  // Add the translationAudio parameter with a default value of 'urdu'
+  const { value: translationAudio }: { value: string } = useGetQueryParamOrReduxValue(
+    QueryParam.TRANSLATION_AUDIO,
+    null,
+    null,
+  );
+
+  // Get customVideoUrl directly from Redux (not from query params since blob URLs can't be serialized)
+  const mediaMakerSettings = useSelector(selectMediaMakerSettings);
+  const customVideoUrl = mediaMakerSettings.customVideoUrl;
+  const showArabic = mediaMakerSettings.showArabic ?? true;
+  const showLogo = mediaMakerSettings.showLogo ?? true;
+  const showSurahInfo = mediaMakerSettings.showSurahInfo ?? true;
 
   return useMemo(() => {
     return {
@@ -89,8 +105,13 @@ const useGetMediaSettings = (
       translationAlignment,
       orientation,
       videoId,
+      customVideoUrl,
       surah,
       previewMode,
+      translationAudio,
+      showArabic,
+      showLogo,
+      showSurahInfo,
     };
   }, [
     backgroundColor,
@@ -110,7 +131,12 @@ const useGetMediaSettings = (
     verseFrom,
     verseTo,
     videoId,
+    customVideoUrl,
     previewMode,
+    translationAudio,
+    showArabic,
+    showLogo,
+    showSurahInfo,
   ]);
 };
 

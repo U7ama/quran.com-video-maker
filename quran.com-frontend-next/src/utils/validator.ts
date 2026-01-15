@@ -278,7 +278,6 @@ export const isValidVerseKey = (chaptersData: ChaptersData, verseKey: string): b
  *
  * 1. if the verse number bigger than the surah's verses count
  * 2. if the verse from or verse to not matching the surah
- * 3. if the verse from and verse to has bigger than 10 ayahs difference
  *
  * @param {string} startVerseKey
  * @param {string} endVerseKey
@@ -310,9 +309,6 @@ export const isValidVerseFrom = (
   if (startSurahNumber !== Number(chapterID)) {
     return false;
   }
-  if (endVerseNumber - startVerseNumber >= MAX_AYAHS_LIMIT) {
-    return false;
-  }
   return true;
 };
 
@@ -321,7 +317,6 @@ export const isValidVerseFrom = (
  * 1. if the ending verse number bigger than the surah's verses count
  * 2. if the ending verse number smaller than the starting verse
  * 3. if the verse from or verse to not matching the surah
- * 4. if the verse from and verse to has bigger than 10 ayahs difference
  *
  * @param {string} startVerseKey
  * @param {string} endVerseKey
@@ -354,9 +349,6 @@ export const isValidVerseTo = (
     return false;
   }
   if (endSurahNumber !== Number(chapterID)) {
-    return false;
-  }
-  if (endVerseNumber - startVerseNumber >= MAX_AYAHS_LIMIT) {
     return false;
   }
   return true;

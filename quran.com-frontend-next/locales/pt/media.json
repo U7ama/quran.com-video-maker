@@ -30,5 +30,8 @@
   "to": "para",
   "verse-key": "Número do capítulo e versículo, por exemplo 2:255",
   "video-picker": "Vídeo de fundo",
-  "your-link": "Copie seu link"
+  "your-link": "Copie seu link",
+  "translation-audio": "Áudio de tradução",
+  "translation-audio-none": "Nenhum",
+  "translation-audio-urdu": "Urdu"
 }

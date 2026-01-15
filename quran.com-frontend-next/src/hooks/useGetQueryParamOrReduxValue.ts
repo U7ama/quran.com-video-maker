@@ -18,6 +18,7 @@ import {
   selectSurah,
   selectSurahAndVersesFromAndTo,
   selectTranslationAlignment,
+  selectTranslationAudio,
   selectTranslationFontScale,
   selectTranslations,
   selectVerseAlignment,
@@ -59,12 +60,23 @@ import {
 import { isValidChapterId } from '@/utils/validator';
 import QueryParam from 'types/QueryParam';
 
+const isValidTranslationAudioQueryParamValue = (value) => {
+  return value === 'none' || value === 'urdu' || value === 'urdu-only';
+};
+
 export const QUERY_PARAMS_DATA = {
   [QueryParam.TRANSLATIONS]: {
     reduxValueSelector: selectSelectedTranslations,
     reduxValueEqualityFunction: areArraysEqual,
     queryParamValueType: QueryParamValueType.ArrayOfNumbers,
     isValidQueryParam: (val) => isValidTranslationsQueryParamValue(val),
+  },
+  [QueryParam.TRANSLATION_AUDIO]: {
+    reduxValueSelector: selectTranslationAudio,
+    reduxValueEqualityFunction: shallowEqual,
+    queryParamValueType: QueryParamValueType.String,
+    isValidQueryParam: (val) => isValidTranslationAudioQueryParamValue(val),
+    customValueGetterWhenParamIsInvalid: () => 'urdu', // Default to 'urdu'
   },
   [QueryParam.MEDIA_TRANSLATIONS]: {
     reduxValueSelector: selectTranslations,

@@ -12,6 +12,7 @@ import WatermarkColor from '@/types/Media/WatermarkColor';
 import { QuranFont } from '@/types/QuranReader';
 import Verse from '@/types/Verse';
 
+export const DEFAULT_TRANSLATION_AUDIO = 'urdu';
 export const DEFAULT_SURAH = 1;
 export const DEFAULT_VERSE = '1';
 export const DEFAULT_RECITER_ID = 7;
@@ -37,6 +38,9 @@ export const OPACITY_VALUES = [0, 0.2, 0.4, 0.6, 0.8, 1];
 export const MINIMUM_BORDER = 0;
 export const MAXIMUM_BORDER = 10;
 export const DEFAULT_PREVIEW_MODE = PreviewMode.DISABLED;
+export const DEFAULT_SHOW_ARABIC = true;
+export const DEFAULT_SHOW_LOGO = true;
+export const DEFAULT_SHOW_SURAH_INFO = true;
 
 export function getDefaultVerseKeys(lang = 'en') {
   const keys = defaultVerses.map((verse) => `${verse.chapterId}:${verse.verseNumber}`);
@@ -118,4 +122,7 @@ export const DEFAULT_PROPS = {
   borderSize: DEFAULT_BORDER_SIZE,
   backgroundColor: DEFAULT_BACKGROUND_COLOR,
   previewMode: DEFAULT_PREVIEW_MODE,
+  showArabic: DEFAULT_SHOW_ARABIC,
+  showLogo: DEFAULT_SHOW_LOGO,
+  showSurahInfo: DEFAULT_SHOW_SURAH_INFO,
 };

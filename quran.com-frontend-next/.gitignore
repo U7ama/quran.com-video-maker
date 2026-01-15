@@ -30,7 +30,7 @@ node_modules/
 
 # Yarn Integrity file
 .yarn-integrity
-
+tmp
 # dotenv environment variables file
 .env
 .env.local

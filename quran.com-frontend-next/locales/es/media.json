@@ -30,5 +30,8 @@
   "to": "de",
   "verse-key": "Capítulo y número de versículo, por ejemplo 2:255",
   "video-picker": "Vídeo de fondo",
-  "your-link": "Copia tu enlace"
+  "your-link": "Copia tu enlace",
+  "translation-audio": "Audio de traducción",
+  "translation-audio-none": "Ninguno",
+  "translation-audio-urdu": "Urdu"
 }

@@ -119,9 +119,98 @@ export const getCurrentRangesAudioData = (
   return rangesChapterData;
 };
 
-export const getDurationInFrames = (timestamps: Timestamp[]) => {
+export const getDurationInFrames = (timestamps: Timestamp[], translationAudio = 'none') => {
+  if (!timestamps || timestamps.length === 0) {
+    return 300; // Default to 10 seconds at 30fps
+  }
+
+  // If Urdu-only mode is enabled, only use Urdu durations (no Arabic)
+  if (translationAudio === 'urdu-only') {
+    // Check if timestamps already have urduDuration calculated (from render-local.js)
+    const hasUrduDurations = timestamps.every(
+      (t) => t.urduDuration !== undefined && t.urduDuration !== null,
+    );
+
+    if (hasUrduDurations) {
+      // Calculate total duration using only Urdu durations (no Arabic, no buffer)
+      let currentPosition = 0;
+
+      for (let i = 0; i < timestamps.length; i++) {
+        const timestamp = timestamps[i];
+        const urduDuration = timestamp.urduDuration || 300;
+
+        // Accumulate: Only Urdu (no Arabic, no buffer)
+        currentPosition += urduDuration;
+      }
+
+      const totalDuration = currentPosition + 60; // Add 2 second buffer at end
+
+      console.log(
+        `✅ Calculated total duration (Urdu-only) by accumulating all verses: ${totalDuration} frames (${(
+          totalDuration / 30
+        ).toFixed(2)}s)`,
+      );
+      return totalDuration;
+    }
+
+    // Fallback: Calculate from scratch if urduDuration is not available
+    console.warn('⚠️ Timestamps missing urduDuration, calculating from scratch (Urdu-only mode)');
+    const totalUrduDuration = timestamps.reduce(
+      (acc, current) => acc + (current.urduDuration || 300),
+      0,
+    );
+
+    return totalUrduDuration + 60; // Only Urdu duration + buffer
+  }
+
+  // If Urdu translation is enabled and timestamps have urduDuration pre-calculated
+  if (translationAudio === 'urdu') {
+    // Check if timestamps already have urduDuration calculated (from render-local.js)
+    const hasUrduDurations = timestamps.every(
+      (t) => t.urduDuration !== undefined && t.urduDuration !== null,
+    );
+
+    if (hasUrduDurations) {
+      // Calculate total duration by accumulating through all verses (same logic as player)
+      // This ensures consistency even if urduStart values are slightly off
+      let currentPosition = 0;
+      const bufferFrames = 15; // 0.5 seconds buffer at 30fps
+
+      for (let i = 0; i < timestamps.length; i++) {
+        const timestamp = timestamps[i];
+        const arabicDuration = timestamp.durationInFrames;
+        const urduDuration = timestamp.urduDuration || 300;
+
+        // Accumulate: Arabic + buffer + Urdu
+        currentPosition += arabicDuration + bufferFrames + urduDuration;
+      }
+
+      const totalDuration = currentPosition + 60; // Add 2 second buffer at end
+
+      console.log(
+        `✅ Calculated total duration by accumulating all verses: ${totalDuration} frames (${(
+          totalDuration / 30
+        ).toFixed(2)}s)`,
+      );
+      return totalDuration;
+    }
+
+    // Fallback: Calculate from scratch if urduDuration is not available
+    console.warn('⚠️ Timestamps missing urduDuration, calculating from scratch');
+    const translationBuffer = 15; // 0.5s buffer at 30fps per verse
+    const arabicDuration = timestamps.reduce((acc, current) => acc + current.durationInFrames, 0);
+    const totalUrduDuration = timestamps.reduce(
+      (acc, current) => acc + (current.urduDuration || 300),
+      0,
+    );
+    const totalBuffers = timestamps.length * translationBuffer;
+
+    return arabicDuration + totalBuffers + totalUrduDuration + 60;
+  }
+
+  // When not using Urdu translation, add a small buffer to the end to prevent abrupt cutting
   const durationInFrames = timestamps.reduce((acc, current) => acc + current.durationInFrames, 0);
-  return durationInFrames <= 0 ? 1 : durationInFrames;
+  return Math.max(durationInFrames + 30, 300); // At least 10 seconds, plus 1 second buffer
 };
 
 /**

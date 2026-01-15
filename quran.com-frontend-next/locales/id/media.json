@@ -30,5 +30,8 @@
   "to": "ke",
   "verse-key": "Nomor Bab dan Ayat misalnya 2:255",
   "video-picker": "Video latar belakang",
-  "your-link": "Salin tautan Anda"
+  "your-link": "Salin tautan Anda",
+  "translation-audio": "Audio terjemahan",
+  "translation-audio-none": "Tidak ada",
+  "translation-audio-urdu": "Urdu"
 }

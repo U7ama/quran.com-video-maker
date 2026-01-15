@@ -30,5 +30,8 @@
   "to": "ถึง",
   "verse-key": "บทและข้อ เช่น 2:255",
   "video-picker": "วีดีโอพื้นหลัง",
-  "your-link": "คัดลอกลิงก์ของคุณ"
+  "your-link": "คัดลอกลิงก์ของคุณ",
+  "translation-audio": "เสียงแปล",
+  "translation-audio-none": "ไม่มี",
+  "translation-audio-urdu": "ภาษาอูรดู"
 }
