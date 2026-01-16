@@ -28,7 +28,10 @@ const Error = ({ hasFullWidth = true }: ErrorProps) => {
       router.back();
       return;
     }
-    router.push('/');
+    const isMediaRoute = router.asPath?.startsWith('/media');
+    if (!isMediaRoute) {
+      router.push('/media');
+    }
   };
 
   return (
