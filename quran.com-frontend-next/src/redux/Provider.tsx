@@ -1,4 +1,4 @@
-import { useContext, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import setLanguage from 'next-translate/setLanguage';
 import { Provider } from 'react-redux';
@@ -12,7 +12,6 @@ import { getUserPreferences } from '@/utils/auth/api';
 import { isLoggedIn } from '@/utils/auth/login';
 import { setLocaleCookie } from '@/utils/cookies';
 import isClient from '@/utils/isClient';
-import { AudioPlayerMachineContext } from 'src/xstate/AudioPlayerMachineContext';
 import PreferenceGroup from 'types/auth/PreferenceGroup';
 
 /**
@@ -27,8 +26,6 @@ import PreferenceGroup from 'types/auth/PreferenceGroup';
 const ReduxProvider = ({ children, locale }) => {
   const store = useMemo(() => getStore(locale), [locale]);
   const persistor = useMemo(() => persistStore(store), [store]);
-  const audioService = useContext(AudioPlayerMachineContext);
-
   /**
    * Before the Gate lifts, we want to get the user preferences
    * then store in Redux so that they can be used.
@@ -43,17 +40,6 @@ const ReduxProvider = ({ children, locale }) => {
           setLocaleCookie(remoteLocale[PreferenceGroup.LANGUAGE]);
         }
         store.dispatch(syncUserPreferences(userPreferences, locale));
-        const audioPlayerContext = audioService.getSnapshot().context;
-        const playbackRate =
-          userPreferences[PreferenceGroup.AUDIO]?.playbackRate || audioPlayerContext.playbackRate;
-        const reciterId =
-          userPreferences[PreferenceGroup.AUDIO]?.reciter || audioPlayerContext.reciterId;
-        audioService.send({
-          type: 'SET_INITIAL_CONTEXT',
-          playbackRate,
-          reciterId,
-          volume: audioPlayerContext.volume,
-        });
         // eslint-disable-next-line no-empty
       } catch (error) {}
     }
