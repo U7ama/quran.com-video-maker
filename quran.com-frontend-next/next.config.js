@@ -165,6 +165,9 @@ const nextConfig = {
   compiler: {
     removeConsole: !isDev,
   },
+  sassOptions: {
+    includePaths: [path.join(__dirname), path.join(__dirname, 'src/styles')],
+  },
 };
 
 // Apply plugins
