@@ -4,7 +4,6 @@
 /* eslint-disable no-unsafe-optional-chaining */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import classNames from 'classnames';
 import {
   AbsoluteFill,
   Audio as RemotionAudio,
@@ -15,18 +14,15 @@ import {
 } from 'remotion';
 
 import styles from './MediaMakerContent.module.scss';
+import VerseOverlay from './VerseOverlay';
 
 import useGetChaptersData from '@/hooks/useGetChaptersData';
-import Alignment from '@/types/Media/Alignment';
 import { Timestamp } from '@/types/Media/GenerateMediaFileRequest';
 import Orientation from '@/types/Media/Orientation';
 import { QuranFont } from '@/types/QuranReader';
-import Translation from '@/types/Translation';
 import Verse from '@/types/Verse';
 import { getChapterData } from '@/utils/chapter';
-import { toLocalizedNumber } from '@/utils/locale';
 import defaultChaptersData from '@/utils/media/defaultChaptersData.json';
-import { convertHexToRGBA } from '@/utils/media/helpers';
 import getPlainTranslationText from '@/utils/plainTranslationText';
 
 type Props = {
@@ -54,7 +50,6 @@ type Props = {
   showSurahInfo?: boolean;
 };
 
-const WORD_SURAH = 'سُورَة';
 const MediaMakerContent: React.FC<Props> = ({
   verses,
   audio,
@@ -405,98 +400,32 @@ const MediaMakerContent: React.FC<Props> = ({
               from={verseStartFrame}
               durationInFrames={totalVerseDuration}
             >
-              {/* Visual content - the same for both Arabic and Urdu audio */}
-              {(showLogo || showSurahInfo) && (
-                <AbsoluteFill
-                  style={{
-                    height: '250px',
-                    paddingTop: isPortrait ? 180 : 40,
-                    backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0))',
-                  }}
-                >
-                  {showLogo && (
-                    <div className={styles.chapterTitle}>
-                      <div className={styles.chapterLogo}>
-                        <span
-                          className={classNames(styles.logo, {
-                            [styles.logoPortrait]: isPortrait,
-                            [styles.logoLandscape]: !isPortrait,
-                          })}
-                        >
-                          Quran.com
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                  {showSurahInfo && (
-                    <div className={styles.surahInfo}>
-                      {verse.juzNumber && (
-                        <span className={styles.juzNumber}>
-                          {`الجزء ${toLocalizedNumber(verse.juzNumber, 'ar')}`}
-                        </span>
-                      )}
-
-                      <span className={styles.surahArabic}>
-                        {`${WORD_SURAH} ${chapter?.translatedName}`}
-                      </span>
-                      <span className={styles.surahNumber}>
-                        {toLocalizedNumber(Number(verse.chapterId), 'ar')}
-                      </span>
-                    </div>
-                  )}
-                </AbsoluteFill>
-              )}
-              <AbsoluteFill
-                style={{
-                  backgroundColor: convertHexToRGBA(backgroundColor, Number(opacity)),
-                  color: fontColor,
-                  // @ts-ignore
-                  // eslint-disable-next-line @typescript-eslint/naming-convention
-                  '--border-size': `${borderSize}px`,
-                  // eslint-disable-next-line @typescript-eslint/naming-convention
-                  '--border-color': borderColor,
-                }}
-                className={classNames(styles.verseContainer, styles.verseBorder, {
-                  [styles.verseLandscape]: !isPortrait,
-                  [styles.versePortrait]: isPortrait,
-                })}
-              >
-                {showArabic && (
-                  <div
-                    style={{
-                      fontSize: quranTextFontScale * 10.1,
-                    }}
-                    className={classNames(styles.verseText, {
-                      [styles.verseCentre]: verseAlignment === Alignment.CENTRE,
-                      [styles.verseJustified]: verseAlignment === Alignment.JUSTIFIED,
-                      [styles.indopakFont]: quranTextFontStyle === QuranFont.IndoPak,
-                      [styles.uthmaniFont]: quranTextFontStyle === QuranFont.QPCHafs,
-                    })}
-                  >
-                    {verse.words.map((word) => word.text).join(' ')}
-                  </div>
-                )}
-
-                {verse.translations?.map((translation: Translation) => (
-                  <div
-                    key={translation.id}
-                    className={classNames(styles.translation, {
-                      [styles.verseTranslationCentre]: translationAlignment === Alignment.CENTRE,
-                      [styles.verseTranslationJustified]:
-                        translationAlignment === Alignment.JUSTIFIED,
-                    })}
-                  >
-                    <div
-                      style={{ fontSize: translationFontScale * 10.1 }}
-                      dangerouslySetInnerHTML={{
-                        __html: getPlainTranslationText(
-                          `${translation.text} (${verse.chapterId}:${verse.verseNumber})`,
-                        ),
-                      }}
-                    />
-                  </div>
-                ))}
-              </AbsoluteFill>
+              <VerseOverlay
+                arabic={verse.words.map((word) => word.text).join(' ')}
+                chapterId={Number(verse.chapterId)}
+                verseNumber={verse.verseNumber}
+                juzNumber={verse.juzNumber}
+                chapterArabicName={chapter?.translatedName}
+                translations={(verse.translations || []).map((t, index) => ({
+                  ...t,
+                  id: t.id ?? t.resourceId ?? index,
+                  text: getPlainTranslationText(t.text),
+                }))}
+                isPortrait={isPortrait}
+                showLogo={showLogo}
+                showSurahInfo={showSurahInfo}
+                showArabic={showArabic}
+                backgroundColor={backgroundColor}
+                opacity={opacity}
+                fontColor={fontColor}
+                borderColor={borderColor}
+                borderSize={borderSize}
+                verseAlignment={verseAlignment}
+                translationAlignment={translationAlignment}
+                quranTextFontScale={quranTextFontScale}
+                quranTextFontStyle={quranTextFontStyle}
+                translationFontScale={translationFontScale}
+              />
 
               {/* Audio elements for Urdu translation modes */}
               {translationAudio === 'urdu-only' && (

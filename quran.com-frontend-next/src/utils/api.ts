@@ -23,22 +23,7 @@ const { API_GATEWAY_URL } = process.env;
 /**
  * Determines if we should use local proxy for development
  */
-// const shouldUseLocalProxy = () => {
-//   return (
-//     typeof window !== 'undefined' &&
-//     process.env.NODE_ENV === 'development' &&
-//     process.env.NEXT_PUBLIC_USE_LOCAL_PROXY === 'true'
-//   );
-// };
-
-const shouldUseLocalProxy = () => {
-  return (
-    typeof window !== 'undefined' &&
-    // Remove the NODE_ENV check so it works in both dev and production builds
-    // process.env.NODE_ENV === 'development' &&
-    process.env.NEXT_PUBLIC_USE_LOCAL_PROXY === 'true'
-  );
-};
+const shouldUseLocalProxy = () => process.env.NEXT_PUBLIC_USE_LOCAL_PROXY === 'true';
 
 /**
  * Generates a url to make an api call to our backend

@@ -1,0 +1,13 @@
+/agent/.env
+/agent/data/
+/agent/systemd/
+/quran.com-frontend-next/public/publicMin/agent-cache/
+/quran.com-frontend-next/tsconfig.tsbuildinfo
+
+/agent/systemd-system/
+/agent/cloud/node_modules/
+/agent/cloud/build/
+/.ai/
+/agent/.env.*
+!/agent/.env.example
+/agent/cloud/deployment.json

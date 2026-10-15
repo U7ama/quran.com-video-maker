@@ -1,0 +1,12 @@
+{
+  "name": "daily-quran-agent",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "doctor": "node cli.mjs doctor",
+    "sample": "node cli.mjs sample",
+    "daily": "node cli.mjs daily",
+    "test": "node --test test/*.test.mjs"
+  }
+}
