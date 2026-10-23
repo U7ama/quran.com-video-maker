@@ -59,6 +59,23 @@ religious questions. The software cannot certify every interpretation or clip.
   without a daily review task. Mixed mode uses locally generated scenery when no
   reviewed stock is available. Daily mode uses fresh screened stock or generated scenery.
 
+## Optional visual inspection
+
+- `BACKGROUND_INSPECTION=rekognition` checks six cropped frames at 0, 1, 2, 3,
+  4 and 4.9 seconds, matching the rendered portrait loop. These are samples,
+  not every frame and not the unused remainder of the original stock file.
+- Label detection, content moderation and text detection provide machine
+  evidence. Blocked subjects, incomplete requests, changed files, or missing
+  nature evidence require generated scenery. A rejected candidate cannot be
+  replaced by another uninspected stock or bundled video.
+- A model may reject an eligible candidate but cannot override a failed tool
+  result. Model unavailability does not skip deterministic inspection. Failure
+  to finish the model's result-processing step also uses generated scenery.
+- This does not certify religious suitability, replace whole-clip human review,
+  or set human approval. Original media, source credits and delivery records
+  are preserved. The tool receives background images only; no Quran content,
+  private credentials, or Discord messages are sent for image analysis.
+
 ## Delivery
 
 - Deliver privately to the configured Discord bot DM: one Arabic-plus-recorded-Urdu

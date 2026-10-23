@@ -30,6 +30,21 @@ translator credits are preserved in the manifest and Discord message.
 `TRANSLATION_AUDIO=urdu` is the default Arabic-then-Urdu playback mode.
 Use `none` for Arabic only or `urdu-only` for recorded Urdu narration only.
 
+## New background inspection tool
+
+The optional `inspect_background_video` tool uses Amazon Rekognition to check
+six frames from the five-second portrait loop used behind the verses. Qwen
+makes a real function call, consumes its result, and chooses whether to use the
+candidate or generated scenery. Deterministic checks prevent the model from
+overriding a blocked or incomplete inspection. See [tool behavior, evidence and
+deployment](BACKGROUND_TOOL.md).
+
+Local runs retain `BACKGROUND_INSPECTION=off` by default. Set it to `rekognition`
+to enable the tool after installing the cloud package and configuring AWS access.
+The cloud handler enables it by default, with an explicit `off` override
+available for rollback. Deployed and verified on AWS on 23 October 2026: both
+the nature acceptance and car-footage rejection checks passed in Lambda.
+
 ## Setup
 
 Use Node 22 and the existing frontend/proxy dependencies, plus FFmpeg, FFprobe

@@ -15,6 +15,7 @@ import {prepareCloudBackground} from './background.mjs';
 import {retryFailedRender} from './recovery.mjs';
 import {runCloudPair} from './pair.mjs';
 import {variantPrefix} from '../variants.mjs';
+import {runInspectionTest} from './inspection-test.mjs';
 import {REGION,PRIVATE_BUCKET,MEDIA_BUCKET,getObject,getJson,putJson,putFile,getFile,
   signedMedia,signedSite,acquireLease,releaseLease,continueRun,objectMetadata,deleteRetainedObject} from './aws.js';
 
@@ -23,6 +24,7 @@ const STATE_KEY='cloud/state.json';
 const terminal=new Set(['delivered','sending','uncertain','starting-render','render-error']);
 
 export async function handler(event={},lambdaContext={}) {
+  if(event.action==='inspection-test')return runInspectionTest(event);
   const remaining=()=>lambdaContext.getRemainingTimeInMillis?.() ?? 900000;
   const lease=await acquireLease(lambdaContext.awsRequestId || randomUUID());
   if(!lease)return {status:'busy'};
@@ -33,7 +35,7 @@ export async function handler(event={},lambdaContext={}) {
     const secret=await getObject('deploy/config.env');
     if(!secret)throw new Error('Private agent configuration is missing');
     const privateEnv=parseEnv(await secret.Body.transformToString());
-    const config={...await loadConfig(privateEnv),dataDir:path.join(ROOT,'data'),
+    const config={...await loadConfig({...privateEnv,BACKGROUND_INSPECTION:process.env.BACKGROUND_INSPECTION || privateEnv.BACKGROUND_INSPECTION || 'rekognition'}),dataDir:path.join(ROOT,'data'),
       publicDir:path.join(ROOT,'public'),proxyDir:'/var/task/proxy',builtinDir:'/var/task/backgrounds',prepareOnly:true};
     if(config.translationIds.length!==1 || config.translationIds[0]!==234 || config.reciterId!==7) {
       throw new Error('Cloud deployment requires the selected Jalandhri translation and Al-Afasy reciter');
@@ -41,7 +43,7 @@ export async function handler(event={},lambdaContext={}) {
     if(event.action==='health')return {status:'healthy',reciterId:config.reciterId,
       translationIds:config.translationIds,timezone:config.timezone,dailyTime:config.dailyTime,
       qwenConfigured:Boolean(config.qwenKey),pixabayConfigured:Boolean(config.pixabayKey),
-      discordConfigured:Boolean(config.botToken && config.discordUserId),dailyVariants:config.dailyVariants ? ['urdu','recitation'] : ['single'],textPanelOpacity:config.textPanelOpacity,builtinBackgrounds:true};
+      discordConfigured:Boolean(config.botToken && config.discordUserId),backgroundInspection:config.backgroundInspection,dailyVariants:config.dailyVariants ? ['urdu','recitation'] : ['single'],textPanelOpacity:config.textPanelOpacity,builtinBackgrounds:true};
     cloud=await getJson(STATE_KEY,{runs:{},history:[],backgrounds:{runs:{},pages:{}}});
     const date=latestDueDate(new Date(),config.timezone,config.dailyTime);
     const retentionDeps={buckets:{private:PRIVATE_BUCKET,media:MEDIA_BUCKET},objectMetadata,deleteRetainedObject,

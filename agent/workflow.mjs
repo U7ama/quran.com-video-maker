@@ -6,6 +6,7 @@ import {latestDueDate} from './scheduler.mjs';
 import {readJson, writeJson, getJson, download, probe, command, ensureProxy, acquireLock, fileHash, isFile} from './io.mjs';
 import {selectContent} from './selector.mjs';
 import {chooseBackground} from './backgrounds.mjs';
+import {reviewChosenBackground} from './background-review.mjs';
 import {renderVideo, fitDiscord} from './render.mjs';
 import {deliver, hasDeliveryConfig} from './discord.mjs';
 import {prepareUrduAudio, makeSpokenTimeline} from './translation-audio.mjs';
@@ -69,7 +70,7 @@ export async function prepareVideo(config, selection, date, folder, log=console.
     timeline.cues[i].displayArabic=displayWords?.length && displayWords.every(w=>typeof w==='string'&&w.trim()) ? displayWords.join(' ') : timeline.cues[i].arabic;
     timeline.cues[i].juzNumber=verse.juz_number;
   }
-  const background=await chooseBackground(config,selection.theme,date,assetDir);
+  const background=await reviewChosenBackground(config,await chooseBackground(config,selection.theme,date,assetDir),assetDir,folder);
   log(background.kind==='video' ? `Background: ${background.provider}-${background.id} (${background.reviewMode || 'reviewed library'}).` : `Background: generated scenery${background.fallbackReason ? `; ${background.fallbackReason}` : ''}.`);
   const props={
     passageName:`Surah ${passage.name}`,passageId:passage.id,chapterId:passage.chapter,chapterArabicName,

@@ -35,10 +35,13 @@ export async function loadConfig(overrides = {}) {
   const backgroundProvider=env.BACKGROUND_PROVIDER || (env.PEXELS_API_KEY && !env.PIXABAY_API_KEY ? 'pexels' : 'pixabay');
   if (!['pixabay','pexels'].includes(backgroundProvider)) throw new Error('BACKGROUND_PROVIDER must be pixabay or pexels');
   if (backgroundMode==='daily' && backgroundProvider!=='pixabay') throw new Error('Daily fresh backgrounds require BACKGROUND_PROVIDER=pixabay');
+  const backgroundInspection=env.BACKGROUND_INSPECTION || 'off';
+  if(!['off','rekognition'].includes(backgroundInspection))throw new Error('Invalid BACKGROUND_INSPECTION');
   const translationAudio=env.TRANSLATION_AUDIO || 'urdu';
   if (!['none','urdu','urdu-only'].includes(translationAudio)) throw new Error('Invalid TRANSLATION_AUDIO');
   return {
     timezone, dailyTime, translationIds, proxyUrl: proxyUrl.href.replace(/\/$/, ''), backgroundMode, backgroundProvider, translationAudio,
+    backgroundInspection,
     dailyVariants:env.DAILY_VARIANTS!=='single',
     textPanelOpacity:number('TEXT_PANEL_OPACITY',0.2,0,1),
     reciterId: number('RECITER_ID', 7, 1, 10000),

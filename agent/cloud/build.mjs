@@ -73,5 +73,15 @@ for(const s of baseline.Statement) {
     'arn:aws:lambda:us-east-1:129631621612:function:remotion-render-4-0-534-mem3008mb-disk10240mb-900sec'];
 }
 await writeFile(path.join(output,'agent-role-policy.json'),JSON.stringify(baseline,null,2));
+// Autopilot's projectversion ARN is for the optional custom moderation adapter.
+// These calls use the standard model and inline image bytes, so the generated
+// actions need Resource '*'; restrict this supplemental policy to this region.
+const inspectionBaseline=JSON.parse(await readFile(path.join(directory,'rekognition-iam-baseline.json'),'utf8'));
+const inspectionPolicy=structuredClone(inspectionBaseline.Policies[0].Policy);
+for(const statement of inspectionPolicy.Statement) {
+  statement.Resource=['*'];
+  statement.Condition={StringEquals:{'aws:RequestedRegion':'us-east-1'}};
+}
+await writeFile(path.join(output,'rekognition-role-policy.json'),JSON.stringify(inspectionPolicy,null,2));
 console.log(JSON.stringify({siteBytes:(await stat(path.join(output,'site-private.html'))).size,
   ffmpegBytes:(await stat(path.join(runtime,'bin/ffmpeg'))).size,ffprobeBytes:(await stat(path.join(runtime,'bin/ffprobe'))).size}));
