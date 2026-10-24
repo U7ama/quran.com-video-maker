@@ -79,15 +79,18 @@ test('eligible sampled evidence can be used; explicit model rejection is respect
   }
 });
 
-test('integration switches rejected footage to generated scenery, saves trace, preserves original and skips off/generated modes',async t=>{
+test('integration switches rejected footage to bundled video or generated fallback, saves trace and skips off/generated modes',async t=>{
   const dir=await mkdtemp(path.join(os.tmpdir(),'quran-review-'));t.after(()=>rm(dir,{recursive:true,force:true}));
   const original=path.join(dir,'background.mp4');await writeFile(original,'original-video');
   const bg={kind:'video',theme:'mountains',provider:'pixabay',id:'123',sha256:'source-hash',src:'/agent-cache/test/background.mp4',approved:false};
   const result=await reviewChosenBackground({backgroundInspection:'rekognition'},bg,dir,dir,{
     analyzeFrame:async()=>{},inspect:async()=>({status:'blocked',frames:[{timestamp:2,findings:[{kind:'blocked-object',label:'Person'}]}]})});
-  assert.equal(result.kind,'generated');assert.equal(result.rejectedSource.id,'123');assert.equal(result.inspection.decision,'fallback');
-  assert.equal(await readFile(original,'utf8'),'original-video');
+  assert.equal(result.kind,'video');assert.equal(result.provider,'builtin');assert.equal(result.id,'snow');
+  assert.equal(result.rejectedSource.id,'123');assert.equal(result.inspection.decision,'fallback');
   assert.equal(JSON.parse(await readFile(path.join(dir,'background-inspection.json'))).toolCalls[0].name,'inspect_background_video');
+  const missing=await reviewChosenBackground({backgroundInspection:'rekognition',builtinDir:'/nonexistent'},bg,dir,dir,{
+    analyzeFrame:async()=>{},inspect:async()=>({status:'blocked',frames:[{timestamp:2,findings:[{kind:'blocked-object',label:'Person'}]}]})});
+  assert.equal(missing.kind,'generated');assert.equal(missing.rejectedSource.id,'123');assert.equal(missing.inspection.decision,'fallback');
   assert.equal(await reviewChosenBackground({backgroundInspection:'off'},bg,dir,dir),bg);
   const generated={kind:'generated'};assert.equal(await reviewChosenBackground({backgroundInspection:'rekognition'},generated,dir,dir),generated);
 });

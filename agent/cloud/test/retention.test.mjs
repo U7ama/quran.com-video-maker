@@ -154,3 +154,43 @@ test('S3 deletion uses the recorded exact ETag and only missing metadata is tole
     await assert.rejects(deleteRetainedObject('media','a','*'));
   } finally {S3Client.prototype.send=original;}
 });
+
+
+test('missing manifest preserves receipts and skips deletion while later valid runs are processed',async()=>{
+  const cloud=fixture();
+  const later='2026-10-11';
+  cloud.runs[later]={...structuredClone(run),date:later,renderId:'later',
+    masterKey:'renders/later/out.mp4',uploadKey:`cloud/runs/${later}/video.discord.mp4`};
+  const original=structuredClone(cloud.runs[date]);
+  const deleted=[];
+  const deps=depsFor({getManifest:async day=>day===date ? null : {...manifest,date:later,
+    cloud:{...manifest.cloud,renderId:'later',masterKey:'renders/later/out.mp4'}},
+    getPrepared:async()=>({props:{cues:[]}}),deleteRetainedObject:async(...args)=>deleted.push(args)});
+  const result=await maintainRetention(cloud,deps,{now:due+2*86400000,date:'2026-10-20'});
+  assert.deepEqual(result.skippedRuns,[{date,reason:'missing-manifest'}]);
+  assert.equal(result.initializedRuns,1);
+  assert.deepEqual(cloud.runs[date],original);
+  assert.equal(cloud.runs[later].retention.status,'retained');
+  assert.equal(deleted.length,0);
+  assert.equal(cloud.history[0].messageId,run.messageId);
+});
+
+test('missing preparation data never infers assets or marks a run cleaned',async()=>{
+  const cloud=fixture();const original=structuredClone(cloud.runs[date]);
+  const result=await maintainRetention(cloud,depsFor({getPrepared:async()=>null,
+    objectMetadata:async()=>{throw new Error('must not inspect inferred files');},
+    deleteRetainedObject:async()=>{throw new Error('must not delete');}}),{now:due,date:'2026-10-20'});
+  assert.deepEqual(result.skippedRuns,[{date,reason:'missing-prepared-metadata'}]);
+  assert.deepEqual(cloud.runs[date],original);
+  assert.equal(result.cleanedRuns,0);
+});
+
+test('missing manifest cannot authorize deletion of an existing inventory',async()=>{
+  const cloud=fixture();
+  await maintainRetention(cloud,depsFor(),{now:due-1,date:'2026-10-16'});
+  const original=structuredClone(cloud.runs[date]);
+  const result=await maintainRetention(cloud,depsFor({getManifest:async()=>null,
+    deleteRetainedObject:async()=>{throw new Error('must not delete');}}),{now:due,date:'2026-10-20'});
+  assert.equal(result.skippedRuns[0].reason,'missing-manifest');
+  assert.deepEqual(cloud.runs[date],original);
+});

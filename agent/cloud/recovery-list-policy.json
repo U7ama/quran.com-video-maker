@@ -1,0 +1,14 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DistinguishMissingRecoveryObjects",
+      "Effect": "Allow",
+      "Action": "s3:ListBucket",
+      "Resource": [
+        "arn:aws:s3:::quran-agent-129631621612-us-east-1",
+        "arn:aws:s3:::remotionlambda-useast1-quran-129631621612"
+      ]
+    }
+  ]
+}

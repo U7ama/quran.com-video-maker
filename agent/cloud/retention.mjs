@@ -88,10 +88,21 @@ export async function maintainRetention(cloud,deps,{now=Date.now(),date,preview=
   if(!force && cloud.retention?.lastCheckedDate===date &&
       candidates.every(c=>candidateRun(c).retention?.inventory))return {status:'already-checked'};
   let cleanedRuns=0,initializedRuns=0;
+  const skippedRuns=[];
   for(const candidate of candidates) {
     const run=candidateRun(candidate);
     const manifest=await deps.getManifest(candidate.date,candidate.variant);
+    // Missing recovery metadata cannot authorize deletion. Keep the receipt and
+    // continue with other runs instead of blocking the entire daily sweep.
+    if(!manifest) {
+      skippedRuns.push({date:candidate.date,...(candidate.variant ? {variant:candidate.variant} : {}),reason:'missing-manifest'});
+      continue;
+    }
     const prepared=run.retention?.inventory ? null : await deps.getPrepared(candidate.date,candidate.variant);
+    if(!run.retention?.inventory && !prepared?.props) {
+      skippedRuns.push({date:candidate.date,...(candidate.variant ? {variant:candidate.variant} : {}),reason:'missing-prepared-metadata'});
+      continue;
+    }
     const plan=retentionPlan(candidate.date,run,manifest,prepared,deps.buckets,now);
     if(!run.retention?.inventory) {
       const inventory=[];
@@ -123,8 +134,8 @@ export async function maintainRetention(cloud,deps,{now=Date.now(),date,preview=
     await deps.save(cloud);
     cleanedRuns++;
   }
-  cloud.retention={lastCheckedDate:date,lastCheckedAt:new Date(now).toISOString(),days:RETENTION_DAYS,cleanedRuns,initializedRuns};
+  cloud.retention={lastCheckedDate:date,lastCheckedAt:new Date(now).toISOString(),days:RETENTION_DAYS,cleanedRuns,initializedRuns,skippedRuns};
   await deps.save(cloud);
-  return {status:'checked',days:RETENTION_DAYS,cleanedRuns,initializedRuns};
+  return {status:'checked',days:RETENTION_DAYS,cleanedRuns,initializedRuns,skippedRuns};
 }
 import {DAILY_VARIANTS,variantPrefix} from '../variants.mjs';

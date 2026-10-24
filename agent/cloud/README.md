@@ -54,7 +54,7 @@ changes. Existing default assets and opacity settings were already present local
   Node 24, arm64, 3008 MB memory and 10 GB temporary disk. Five render chunks
   leave room within this account's current concurrency quota of ten.
 - EventBridge Scheduler group `quran-video-agent`: daily at 06:00
-  `Asia/Karachi`, plus a five-minute catch-up schedule. A job starts at 06:00;
+  `Asia/Karachi`, plus a 60-minute catch-up schedule (changed on 24 October 2026). A job starts at 06:00;
   delivery follows rendering and validation.
 - Private configuration and durable state:
   `quran-agent-129631621612-us-east-1`.
@@ -220,3 +220,21 @@ send were not exercised by this benchmark. This verifies the tested stock worklo
 not an upper bound for every future clip. The five temporary cloud test objects
 were removed after download; the daily receipt and both enabled schedules stayed
 unchanged. See ignored `build/stock-benchmark/result.json` and `deployment.json`.
+
+
+### Recovery metadata after the October 2026 cleanup
+
+Retention skips confirmed runs whose manifest or initial preparation metadata is
+missing, records their dates/reasons in `cloud.retention.skippedRuns`, and
+continues maintaining other valid runs. It does not invent receipts, mark missing
+files as cleaned, or delete files based on incomplete metadata. Existing mismatch
+and ETag checks still fail closed. Missing historical masters cannot be recovered
+from unversioned S3 after deletion; retained Discord copies are not substitutes
+for the original high-quality masters.
+
+The execution role also requires `s3:ListBucket` on these two exact buckets
+(`recovery-list-policy.json`, deployed as inline policy
+`QuranRecoveryObjectExistence` on `QuranDailyAgentLambda`). Without this permission,
+S3 reports missing objects as AccessDenied rather than NoSuchKey/NotFound. Genuine
+access-denied errors must continue to fail closed. This permission lists names;
+it does not add object read/write access beyond the existing scoped policy.

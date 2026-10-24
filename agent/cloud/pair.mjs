@@ -30,7 +30,7 @@ export async function runCloudPair(config,cloud,date,{remaining,saveCloud,contin
           try {
             const repaired=retryFailedRender({...state,selection:run.selection},raw || {});
             const assetDir=path.join(config.publicDir,'agent-cache',date);
-            const bg=config.backgroundInspection==='rekognition' ? inspectionFallback(prepared.context.background,'Expired stock render failed') : await fallbackBackground(config,run.selection.theme,date,assetDir,'Expired stock render failed');
+            const bg=config.backgroundInspection==='rekognition' ? await inspectionFallback(config,prepared.context.background,date,assetDir,'Expired stock render failed') : await fallbackBackground(config,run.selection.theme,date,assetDir,'Expired stock render failed');
             const replacement={assetDir,props:{background:bg},context:{background:bg}};
             await prepareCloudBackground(replacement);
             if(bg.src) {
@@ -69,7 +69,7 @@ export async function runCloudPair(config,cloud,date,{remaining,saveCloud,contin
     try {await prepareCloudBackground(prepared);}
     catch {
       if(prepared.props.background.provider!=='pixabay')throw new Error('Cloud built-in background normalization failed');
-      prepared.props.background=prepared.context.background=config.backgroundInspection==='rekognition' ? inspectionFallback(prepared.context.background,'Stock normalization failed') : await fallbackBackground(config,run.selection.theme,date,prepared.assetDir,'Stock normalization failed');
+      prepared.props.background=prepared.context.background=config.backgroundInspection==='rekognition' ? await inspectionFallback(config,prepared.context.background,date,prepared.assetDir,'Stock normalization failed') : await fallbackBackground(config,run.selection.theme,date,prepared.assetDir,'Stock normalization failed');
       await prepareCloudBackground(prepared);
     }
     cloud.backgrounds=await readJson(path.join(config.dataDir,'backgrounds','daily.json'),cloud.backgrounds);
